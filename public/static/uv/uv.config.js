@@ -1,6 +1,6 @@
 self.__uv$config = {
-    prefix: '/static/insanity/',
-    bare:'https://hyperion-v1.us.to/bare/', //dont steal my bare instead deploy one yorself on vercel via https://github.com/321EZ123/focus-bare
+    prefix: '/static/petezah/',
+    bare:'https://petezahgames.com/bare/', //yes this uses bare (wisp doesnt work on vercel)
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: '/static/uv/uv.handler.js',
