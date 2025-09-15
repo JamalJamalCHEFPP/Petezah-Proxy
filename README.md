@@ -102,6 +102,7 @@ Or use the buttons below (You will have to set up enviroment variables)
 - <https://pzn.lynx-ai-demo.com/>
 - <https://math.lynx-ai-demo.com/>
 - <https://science.lynx-ai-demo.com/>
+- <https://next.petezahgames.com/>
 
 More coming soon!
 
