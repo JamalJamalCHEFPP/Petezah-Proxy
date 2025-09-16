@@ -58,7 +58,6 @@ export const scrapeSite = async (url: string, options?: ScrapeOptions) => {
       siteData = scrapeMetaTags(url, html);
       siteData.largestImage = scrapedData.largestImage;
     } catch (err) {
-      console.log(err);
       errors.push(err);
     }
   }
@@ -104,6 +103,7 @@ const stealthScrapeUrl = async (url: string, options?: ScrapeOptions) => {
   let html;
   let largestImage;
 
+  //
   await puppeteer.use(StealthPlugin()).use(AdblockerPlugin({ 
     blockTrackers: true 
   })).connect({
