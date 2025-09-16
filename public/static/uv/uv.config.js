@@ -1,6 +1,6 @@
 self.__uv$config = {
     prefix: '/static/petezah/',
-    bare:'https://petezahgames.com/bare/', //yes this uses bare (wisp doesnt work on vercel)
+    bare:'https://ultraviolet.segso.net/',
     encodeUrl: Ultraviolet.codec.xor.encode,
     decodeUrl: Ultraviolet.codec.xor.decode,
     handler: '/static/uv/uv.handler.js',

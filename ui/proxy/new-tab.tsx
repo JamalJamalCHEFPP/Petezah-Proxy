@@ -25,8 +25,7 @@ export default function NewTab({
         <Card className="flex flex-col gap-4 p-[30]! max-w-[80%]">
           <h1 className="w-full text-6xl text-center">PeteZah-Next</h1>
           <h3 className="text-xl text-center text-wrap">
-            Warning: This isn&apos;t a proxy... yet. Some websites may not work
-            right now because they don&apos;t allow iframe embedding.
+            Warning: This proxy uses UV, which is somewhat slow.
           </h3>
           <form
             onSubmit={async (e) => {
@@ -46,20 +45,32 @@ export default function NewTab({
               }
 
               let title = "No title";
+
               try {
-                const res = await fetch(url);
+                const res = await fetch("/static/embed.html#" + url);
                 const html = await res.text();
                 title = html.match(/<title>(.*?)<\/title>/i)?.[1] ?? title;
 
                 const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                const titleElement = doc.querySelector('title');
-                if (titleElement) title = titleElement.innerText
+                const doc = parser.parseFromString(html, "text/html");
+                const titleElement = doc.querySelector("title");
+                if (titleElement) title = titleElement.innerText;
               } catch (err) {
                 if (typeof window !== "undefined") {
                   console.warn("Fetch failed (handled):", err);
                 }
               }
+
+              const params = new URLSearchParams({
+                url: encodeURIComponent(url),
+              });
+              const res = await fetch(`/api/linkpreview?${params}`);
+              const data = await res.json();
+
+              if (data.result.siteData.title) {
+                title = data.result.siteData.title;
+              }
+
               const newTab: Tab = { title, url };
 
               setTabs((prev) => {

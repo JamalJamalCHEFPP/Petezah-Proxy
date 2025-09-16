@@ -53,7 +53,6 @@
       height: 140px;
       position: relative;
       margin-bottom: 20px;
-      filter: drop-shadow(0 0 12px #20b896);
     }
 
     .spinner-circle {
@@ -93,36 +92,6 @@
       text-transform: uppercase;
       color: #59cebf;
       margin-top: 30px;
-      text-shadow:
-        0 0 10px #3ac3ab,
-        0 0 20px #42b4ab,
-        0 0 30px #20b896,
-        0 0 50px #12ae9a;
-      animation: glowPulse 2s ease-in-out infinite, bounce 3s ease-in-out infinite;
-    }
-
-    @keyframes glowPulse {
-      0% {
-        text-shadow:
-          0 0 6px #3ac3ab,
-          0 0 12px #42b4ab,
-          0 0 18px #20b896,
-          0 0 30px #12ae9a;
-      }
-      50% {
-        text-shadow:
-          0 0 20px #59cebf,
-          0 0 30px #42b4ab,
-          0 0 40px #20b896,
-          0 0 60px #12ae9a;
-      }
-      100% {
-        text-shadow:
-          0 0 6px #3ac3ab,
-          0 0 12px #42b4ab,
-          0 0 18px #20b896,
-          0 0 30px #12ae9a;
-      }
     }
 
     @keyframes bounce {
@@ -133,15 +102,7 @@
         transform: translateY(-5px);
       }
     }
-
-    .shadow-layer {
-      position: absolute;
-      width: 100vw;
-      height: 100vh;
-      background: radial-gradient(ellipse at center, rgba(0, 10, 30, 0.6), rgba(0, 0, 0, 0.95));
-      z-index: 0;
-    }
-
+    
     .stars {
       position: absolute;
       width: 100%;
@@ -155,7 +116,6 @@
 
 <body>
   <div class="stars"></div>
-  <div class="shadow-layer"></div>
 
   <div id="main">
     <div class="spinner">

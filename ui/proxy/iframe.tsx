@@ -22,9 +22,7 @@ export default function ProxyIframe({
     const newFavicon = getFaviconFromUrl(tab.url);
     if (tab.faviconUrl !== newFavicon) {
       setTabs((prev) =>
-        prev.map((t, i) =>
-          i === index ? { ...t, faviconUrl: newFavicon } : t
-        )
+        prev.map((t, i) => (i === index ? { ...t, faviconUrl: newFavicon } : t))
       );
     }
   }, [tab.url, index, setTabs, tab.faviconUrl]);
@@ -39,7 +37,7 @@ export default function ProxyIframe({
           : "opacity-0 pointer-events-none"
       )}
       title={tab.url}
-      src={tab.url}
+      src={`/static/embed.html#${tab.url}`}
     />
   );
 }

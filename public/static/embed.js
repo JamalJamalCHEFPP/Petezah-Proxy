@@ -8,6 +8,8 @@ try {
 	}
 } catch (err) {
 	alert(`Bad # string or bad URL. Got error:\n${err}`);
+	alert(destination)
+	console.log(location.hash)
 	throw err;
 }
 

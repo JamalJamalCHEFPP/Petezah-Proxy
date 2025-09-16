@@ -141,7 +141,7 @@ export default function MarqueeBg({
       const json = await res.json();
 
       if ("backgroundType" in json) {
-        console.log(json.backgroundType);
+        setBgType(json.backgroundType);
       }
     });
   }, [supabase.auth]);
