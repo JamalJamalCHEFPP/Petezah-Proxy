@@ -1,4 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+"use server"; // Ensure Next.js treats this as server-only
+
 import { GoToOptions } from "puppeteer";
 import * as cheerio from "cheerio";
 import axios from "axios";
@@ -33,7 +35,7 @@ export const scrapeSite = async (url: string, options?: ScrapeOptions) => {
   const errors: any[] = [];
   let siteData: SiteData | undefined;
 
-  // First try normal axios fetch
+  // First try standard axios fetch
   try {
     const res = await axios.get(url);
     html = res.data;
@@ -91,10 +93,13 @@ const stealthScrapeUrl = async (url: string, options?: ScrapeOptions) => {
     throw new Error("Stealth scraping must run on the server.");
   }
 
-  // Dynamic imports to fix TypeScript typing issues
-  const puppeteerExtra: any = (await import("puppeteer-extra")).default || (await import("puppeteer-extra"));
-  const StealthPlugin: any = (await import("puppeteer-extra-plugin-stealth")).default;
-  const AdblockerPlugin: any = (await import("puppeteer-extra-plugin-adblocker")).default;
+  // Dynamic imports to prevent Webpack from bundling
+  const puppeteerExtra: any = (await import("puppeteer-extra")).default;
+  const StealthPlugin: any = (await import("puppeteer-extra-plugin-stealth"))
+    .default;
+  const AdblockerPlugin: any = (
+    await import("puppeteer-extra-plugin-adblocker")
+  ).default;
 
   let html: string | undefined;
   let largestImage: string | undefined;
@@ -107,20 +112,27 @@ const stealthScrapeUrl = async (url: string, options?: ScrapeOptions) => {
   try {
     const page = await browser.newPage();
 
-    // Set a random user agent for stealth
+    // Random user agent
     const userAgent = new UserAgent();
     await page.setUserAgent(userAgent.toString());
 
+    // Navigate to page
     await page.goto(url, options?.stealthOptions?.gotoOptions);
 
+    // Get full HTML
     html = await page.evaluate(() => document.querySelector("*")?.outerHTML);
 
+    // Find largest image
     largestImage = await page.evaluate(() => {
       const imageLargest = () => {
         let best: HTMLImageElement | null = null;
         const images = Array.from(document.getElementsByTagName("img"));
         for (const img of images) {
-          if (!best || img.naturalWidth * img.naturalHeight > best.naturalWidth * best.naturalHeight) {
+          if (
+            !best ||
+            img.naturalWidth * img.naturalHeight >
+              best.naturalWidth * best.naturalHeight
+          ) {
             best = img;
           }
         }
