@@ -1,163 +1,138 @@
-import { GoToOptions } from 'puppeteer';
-import puppeteer from 'puppeteer-extra';
-import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import AdblockerPlugin  from 'puppeteer-extra-plugin-adblocker';
-import * as cheerio from 'cheerio';
-import axios from 'axios';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { GoToOptions } from "puppeteer";
+import * as cheerio from "cheerio";
+import axios from "axios";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 //@ts-ignore
-import UserAgent from 'user-agents';
+import UserAgent from "user-agents";
 
 const AUTH = `${process.env.BRIGHT_DATA_USERNAME}:${process.env.BRIGHT_DATA_PASSWORD}`;
 
 export interface SiteData {
-  url: string
-  title?: string
-  favicon?: string
-  description?: string
-  image?: string
-  author?: string
-  siteName?: string
-  largestImage?: string
+  url: string;
+  title?: string;
+  favicon?: string;
+  description?: string;
+  image?: string;
+  author?: string;
+  siteName?: string;
+  largestImage?: string;
 }
 
-export interface ScrapeOptions  {
-  scrape?: boolean
-  stealth?: boolean
+export interface ScrapeOptions {
+  scrape?: boolean;
+  stealth?: boolean;
   stealthOptions?: {
-    gotoOptions?: GoToOptions
-  }
+    gotoOptions?: GoToOptions;
+  };
 }
 
+// Main scrape function
 export const scrapeSite = async (url: string, options?: ScrapeOptions) => {
-  
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let html: any;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errors: Array<any> = [];
+  let html: string | undefined;
+  const errors: any[] = [];
   let siteData: SiteData | undefined;
 
-  // First try standard request using axios
+  // First try normal axios fetch
   try {
     const res = await axios.get(url);
     html = res.data;
   } catch (err) {
-    console.log(err);
+    console.warn("Axios fetch failed:", err);
     errors.push(err);
   }
+
   if (html) {
     siteData = scrapeMetaTags(url, html);
   }
 
-  // Check if stealth scrapping allowed
-  // Then if no site data OR site image found try stealth puppeteer with searching for largest image
-  if (options?.stealth !== false && (siteData === undefined || siteData.image === undefined)) {
+  // Fallback to stealth puppeteer if needed
+  if (options?.stealth !== false && (!siteData || !siteData.image)) {
     try {
       const scrapedData = await stealthScrapeUrl(url, options);
       html = scrapedData.html;
-      siteData = scrapeMetaTags(url, html);
+      siteData = scrapeMetaTags(url, html ?? "");
       siteData.largestImage = scrapedData.largestImage;
     } catch (err) {
+      console.warn("Stealth scrape failed:", err);
       errors.push(err);
     }
   }
 
-  return {
-    data: siteData,
-    errors: errors
-  }
+  return { data: siteData, errors };
+};
 
-}
-
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const scrapeMetaTags = (url: string, html: any) => {
-
+// Helper: scrape meta tags from HTML
+const scrapeMetaTags = (url: string, html: string) => {
   const $ = cheerio.load(html);
-  
-  const getMetatag = (name: string) =>  
-      $(`meta[name=${name}]`).attr('content') ||  
-      $(`meta[name="og:${name}"]`).attr('content') || 
-      $(`meta[property="og:${name}"]`).attr('content') ||  
-      $(`meta[name="twitter:${name}"]`).attr('content');
 
-  const title = getMetatag('title') ? getMetatag('title') : $('title').first().text();
+  const getMetatag = (name: string) =>
+    $(`meta[name=${name}]`).attr("content") ||
+    $(`meta[name="og:${name}"]`).attr("content") ||
+    $(`meta[property="og:${name}"]`).attr("content") ||
+    $(`meta[name="twitter:${name}"]`).attr("content");
+
+  const title = getMetatag("title") || $("title").first().text();
 
   return {
     url,
-    title: title,
-    favicon: $('link[rel="shortcut icon"]').attr('href'),
-    // description: $('meta[name=description]').attr('content'),
-    description: getMetatag('description'),
-    image: getMetatag('image'),
-    author: getMetatag('author'),
-    siteName: getMetatag('site_name')
+    title,
+    favicon: $('link[rel="shortcut icon"]').attr("href"),
+    description: getMetatag("description"),
+    image: getMetatag("image"),
+    author: getMetatag("author"),
+    siteName: getMetatag("site_name"),
+  };
+};
+
+// Stealth scraping using puppeteer-extra (server only)
+const stealthScrapeUrl = async (url: string, options?: ScrapeOptions) => {
+  if (typeof window !== "undefined") {
+    throw new Error("Stealth scraping must run on the server.");
   }
 
-}
+  // Dynamic imports to fix TypeScript typing issues
+  const puppeteerExtra: any = (await import("puppeteer-extra")).default || (await import("puppeteer-extra"));
+  const StealthPlugin: any = (await import("puppeteer-extra-plugin-stealth")).default;
+  const AdblockerPlugin: any = (await import("puppeteer-extra-plugin-adblocker")).default;
 
-// Additional fallback using stealth puppeteer see "https://github.com/berstend/puppeteer-extra/wiki/Beginner:-I'm-new-to-scraping-and-being-blocked"
-// For sites such as https://www.fiverr.com/sorich1/fix-bugs-and-build-any-laravel-php-and-vuejs-projects, https://www.netflix.com/gb/title/70136120
-const stealthScrapeUrl = async (url: string, options?: ScrapeOptions) => {
+  let html: string | undefined;
+  let largestImage: string | undefined;
 
-  let html;
-  let largestImage;
+  const browser = await puppeteerExtra
+    .use(StealthPlugin())
+    .use(AdblockerPlugin({ blockTrackers: true }))
+    .connect({ browserWSEndpoint: `wss://${AUTH}@brd.superproxy.io:9222` });
 
-  //
-  await puppeteer.use(StealthPlugin()).use(AdblockerPlugin({ 
-    blockTrackers: true 
-  })).connect({
-    browserWSEndpoint: `wss://${AUTH}@brd.superproxy.io:9222`,
-  }).then(async browser => {
-
+  try {
     const page = await browser.newPage();
 
-    // Set user agent for additional stealth, see https://github.com/berstend/puppeteer-extra/issues/155
+    // Set a random user agent for stealth
     const userAgent = new UserAgent();
     await page.setUserAgent(userAgent.toString());
 
     await page.goto(url, options?.stealthOptions?.gotoOptions);
-    html = await page.evaluate(() => document.querySelector('*')?.outerHTML);
 
-    // Debugging
-    // const fs = require("fs");
-    // fs.writeFile("example.html", html);
-    // await page.screenshot({ path: 'example.png' });
+    html = await page.evaluate(() => document.querySelector("*")?.outerHTML);
 
     largestImage = await page.evaluate(() => {
       const imageLargest = () => {
-        let best = null;
-        const images = document.getElementsByTagName("img");
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        for (const img of images as any) {
-          if (imageSize(img) > imageSize(best)) {
-            best = img
+        let best: HTMLImageElement | null = null;
+        const images = Array.from(document.getElementsByTagName("img"));
+        for (const img of images) {
+          if (!best || img.naturalWidth * img.naturalHeight > best.naturalWidth * best.naturalHeight) {
+            best = img;
           }
         }
         return best;
-      }
-      const imageSize = (img: HTMLImageElement) => {
-        if (!img) {
-          return 0;
-        }
-        return img.naturalWidth * img.naturalHeight;
-      }
-      const imageSrc = (img: HTMLImageElement) => {
-        if (!img) {
-          return null;
-        }
-        return img.src
-      }
-      return imageSrc(imageLargest()); 
+      };
+
+      const img = imageLargest();
+      return img?.src || null;
     });
-
+  } finally {
     await browser.close();
+  }
 
-  });
-
-  return {
-    html: html,
-    largestImage: largestImage
-  };
-
-}
+  return { html, largestImage };
+};
