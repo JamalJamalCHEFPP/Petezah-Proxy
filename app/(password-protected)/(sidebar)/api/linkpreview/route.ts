@@ -9,6 +9,8 @@ import { getBingImageSearch, getImageSearchString } from "@/lib/funcs/search";
 import { scrapeSite, SiteData, ScrapeOptions } from "@/lib/funcs/scrape";
 import { getExceptionSiteData, ExtraData } from "@/utils/exceptions";
 
+export const runtime = "node";
+
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
