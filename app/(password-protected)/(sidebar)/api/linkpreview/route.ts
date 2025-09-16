@@ -11,10 +11,7 @@ import { getBingImageSearch, getImageSearchString } from "@/lib/funcs/search";
 import { scrapeSite, SiteData, ScrapeOptions } from "@/lib/funcs/scrape";
 import { getExceptionSiteData, ExtraData } from "@/utils/exceptions";
 
-export const runtime = "nodejs";
-
-export const dynamic = "force-dynamic";
-
+// ONLY async functions are allowed in "use server" files
 export async function GET(req: NextRequest) {
   const { data, errors } = getLinkPreviewParams(req);
   if (errors.length > 0) {
@@ -27,11 +24,11 @@ export async function GET(req: NextRequest) {
     const linkPreviewData = await getLinkPreviewData(url, stealth, search, validate);
     return NextResponse.json(linkPreviewData);
   } catch (error) {
-    console.error(error);
     return NextResponse.json({ success: false, error }, { status: 500 });
   }
 }
 
+// Helper functions remain the same
 function getLinkPreviewParams(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams;
   const url = searchParams.get("url");
@@ -152,8 +149,7 @@ async function checkIfValidImageUrl(imageUrl: string) {
       response.status === 200 &&
       ((response.headers["content-type"])?.match(/(image)+\//g))?.length !== 0
     );
-  } catch (err) {
-    console.log(err);
+  } catch {
     return false;
   }
 }

@@ -56,7 +56,6 @@ export const scrapeSite = async (url: string, options?: ScrapeOptions) => {
       siteData = scrapeMetaTags(url, html ?? "");
       siteData.largestImage = scrapedData.largestImage;
     } catch (err) {
-      console.warn("Stealth scrape failed:", err);
       errors.push(err);
     }
   }
