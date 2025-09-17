@@ -61,7 +61,7 @@ export default function NewTab({
                 }
               }
 
-              /* const params = new URLSearchParams({
+              const params = new URLSearchParams({
                 url: encodeURIComponent(url),
               });
               const res = await fetch(`/api/linkpreview?${params}`);
@@ -69,7 +69,7 @@ export default function NewTab({
 
               if (data.result.siteData.title) {
                 title = data.result.siteData.title;
-              } */
+              }
 
               const newTab: Tab = { title, url };
 
