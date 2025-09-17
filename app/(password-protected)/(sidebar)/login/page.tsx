@@ -6,9 +6,12 @@ import { createClient } from "@/utils/supabase/client";
 import { useEffect, useState } from "react";
 import type { User } from "@supabase/supabase-js";
 import { FaGithub, FaGoogle, FaDiscord, FaTwitch } from "react-icons/fa";
+import Link from "next/link";
 
 export default function LoginPage() {
   const [user, setUser] = useState<User | null>(null);
+
+  const redirectTo = window.location.origin + "/p";
 
   useEffect(() => {
     async function fetchUser() {
@@ -23,6 +26,7 @@ export default function LoginPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "github",
+      options: { redirectTo },
     });
   }
 
@@ -30,6 +34,7 @@ export default function LoginPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "google",
+      options: { redirectTo },
     });
   }
 
@@ -37,6 +42,7 @@ export default function LoginPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "discord",
+      options: { redirectTo },
     });
   }
 
@@ -44,6 +50,7 @@ export default function LoginPage() {
     const supabase = createClient();
     await supabase.auth.signInWithOAuth({
       provider: "twitch",
+      options: { redirectTo },
     });
   }
 
@@ -127,7 +134,7 @@ export default function LoginPage() {
                 className="px-2! py-1! bg-black border-2 border-white rounded-2xl hover:bg-gray-800 transition-colors duration-500 flex items-center justify-center gap-2"
                 onClick={signInWithDiscord}
               >
-                <FaDiscord /> Discord*
+                <FaDiscord /> Discord
               </button>
               <button
                 className="px-2! py-1! bg-black border-2 border-white rounded-2xl hover:bg-gray-800 transition-colors duration-500 flex items-center justify-center gap-2"
@@ -137,7 +144,13 @@ export default function LoginPage() {
               </button>
             </div>
             <br />
-            <p className="text-sm font-bold ">* Discord OAuth doesn&apos;t work well on this page. Try signing in with a different method and linking your Discord account later in the profile page.</p>
+            <p className="text-sm font-bold text-red-600">
+              OAuth [sign in with provider] may not always work except for on
+              the domain{" "}
+              <Link className="text-blue-600 underline" href="next.petezahgames.com">next.petezahgames.com</Link>.
+              We recommend that you link your OAuth to an email/password signin on our main URL then sign in with email/password here.
+            </p>
+            <br />
           </div>
         </div>
       )}

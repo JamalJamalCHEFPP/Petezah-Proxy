@@ -207,6 +207,7 @@ export default function ProfilePage() {
                           </>
                         )}
                         <button
+                          title="submit"
                           type="submit"
                           onClick={() => {
                             if (allPassed) handleEmailAdded();

@@ -310,7 +310,8 @@ body {
 }
 
 @media print {
-  html, body {
+  html,
+  body {
     display: hidden;
   }
   body {

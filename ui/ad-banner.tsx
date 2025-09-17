@@ -55,7 +55,7 @@ export function PageAdBanner() {
       if (!res.ok) return;
 
       const json = await res.json();
-      if (json.isBooster) {
+      if (json.elevated) {
         setToggled(false);
         localStorage.setItem("isBooster", "true");
       } else {

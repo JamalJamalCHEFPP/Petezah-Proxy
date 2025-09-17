@@ -42,7 +42,7 @@ export default function AdManager() {
       if (!res.ok) return;
 
       const json = await res.json();
-      if (json.isBooster) {
+      if (json.elevated) {
         localStorage.setItem("isBooster", "true");
         removeAdScript();
       } else {

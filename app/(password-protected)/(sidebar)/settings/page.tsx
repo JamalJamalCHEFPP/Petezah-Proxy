@@ -8,6 +8,7 @@ import { useState, useEffect } from "react";
 import { createClient } from "@/utils/supabase/client";
 import { setLocalStorage } from "@/ui/settings-manager";
 import { TabConfigSettingsCard } from "@/ui/settings/tab-config";
+import { CustomizationCard } from "@/ui/settings/customization-card";
 
 export default function Page() {
   const supabase = createClient();
@@ -319,6 +320,16 @@ export default function Page() {
           </p>
           <div className="flex gap-2 mt-2! justify-around items-center">
             <TabConfigSettingsCard />
+          </div>
+          <h2 className="text-lg font-semibold sm:text-2xl md:text-3xl lg:text-4xl mt-4!">
+            Customization
+          </h2>
+          <hr className="my-4!" />
+          <p className="mb-2!">
+            Make the site look and run how you like it
+          </p>
+          <div className="flex gap-2 mt-2! justify-around items-center">
+            <CustomizationCard />
           </div>
         </Card>
       </>

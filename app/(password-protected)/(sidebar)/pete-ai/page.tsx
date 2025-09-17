@@ -119,6 +119,7 @@ export default function Chat() {
                   alt="Pete AI Logo"
                   width={200}
                   height={200}
+                  unoptimized={process.env.NODE_ENV === "development"}
                 />
                 <p className="text-3xl font-bold">Pete AI</p>
                 <div className="flex items-center justify-around gap-2">
@@ -174,12 +175,15 @@ export default function Chat() {
         >
           <div className="relative w-1/2">
             <input
+
+              type="textarea"
               className="px-4! py-2! bg-black border-2 border-white rounded-2xl transition-colors duration-500 w-full pr-12!"
               value={input}
               placeholder="Say something..."
               onChange={handleInputChange}
             />
             <button
+              title="submit"
               type="submit"
               className="absolute top-1/2 right-2 transform -translate-y-1/2 rounded-full p-0!"
             >

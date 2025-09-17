@@ -8,6 +8,8 @@ import ReactMarkdown, { Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeHighlight from "rehype-highlight";
 import { remarkExtendedTable } from "remark-extended-table";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 const markdownComponents: Components = {
   table: ({ children }) => (
@@ -91,14 +93,12 @@ const markdownComponents: Components = {
     </a>
   ),
   ul: ({ children }) => <ul className="list-disc pl-6!">{children}</ul>,
-  ol: ({ children }) => (
-    <ol className="list-decimal pl-6!">{children}</ol>
-  ),
-  li: ({ children }) => <li className="">{children}</li>,
+  ol: ({ children }) => <ol className="list-decimal pl-6!">{children}</ol>,
+  li: ({ children }) => <li>{children}</li>,
 };
 
-const markdownPlugins = [remarkGfm, remarkExtendedTable];
-const markdownRehypePlugins = [rehypeHighlight];
+const markdownPlugins = [remarkGfm, remarkExtendedTable, remarkMath];
+const markdownRehypePlugins = [rehypeHighlight, rehypeKatex];
 
 export const MemoizedMarkdown = memo(function MemoizedMarkdown({
   content,
@@ -108,13 +108,21 @@ export const MemoizedMarkdown = memo(function MemoizedMarkdown({
   className?: string;
 }) {
   useEffect(() => {
-    const link = document.createElement("link");
-    link.rel = "stylesheet";
-    link.href =
+    const highlightCss = document.createElement("link");
+    highlightCss.rel = "stylesheet";
+    highlightCss.href =
       "https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/tomorrow-night-blue.min.css";
-    document.head.appendChild(link);
+
+    const katexCss = document.createElement("link");
+    katexCss.rel = "stylesheet";
+    katexCss.href =
+      "https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css";
+
+    document.head.appendChild(highlightCss);
+    document.head.appendChild(katexCss);
     return () => {
-      document.head.removeChild(link);
+      document.head.removeChild(highlightCss);
+      document.head.removeChild(katexCss);
     };
   }, []);
 

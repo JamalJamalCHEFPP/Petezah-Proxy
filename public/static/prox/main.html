@@ -482,19 +482,19 @@
     </div>
     <div class="navbar" id="navbar">
         <div class="navbar-left">
-            <button onclick="goHome()"><i class="fa fa-home"></i></button>
-            <button onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
-            <button onclick="goForward()"><i class="fas fa-arrow-right"></i></button>
-            <button onclick="refresh()"><i class="fas fa-redo"></i></button>
+            <button title="go home" onclick="goHome()"><i class="fa fa-home"></i></button>
+            <button title="go back" onclick="goBack()"><i class="fas fa-arrow-left"></i></button>
+            <button title="go forward" onclick="goForward()"><i class="fas fa-arrow-right"></i></button>
+            <button title="refresh" onclick="refresh()"><i class="fas fa-redo"></i></button>
         </div>
         <div class="search-container">
             <input type="text" id="search-input" placeholder="Search or enter a URL"
                 onkeydown="if(event.key === 'Enter') search(event)">
-            <button onclick="search(event)"><i class="fas fa-search"></i></button>
+            <button title="search" onclick="search(event)"><i class="fas fa-search"></i></button>
         </div>
         <div class="navbar-right">
-            <button onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
-            <button class="menu-button" onclick="toggleMenu()"></button>
+            <button title="toogle fullscreen" onclick="toggleFullscreen()"><i class="fas fa-expand"></i></button>
+            <button title="toggle menu" class="menu-button" onclick="toggleMenu()"></button>
         </div>
     </div>
     <div class="content-wrapper" id="content-wrapper">
