@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import MarqueeBg from "@/ui/backgrounds/marquee-bg";
@@ -9,7 +10,6 @@ import { useRouter } from "next/navigation";
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [games, setGames] = useState<any[] | string>();
   const [filterCategory, setFilterCategory] = useState("");
   const router = useRouter();
@@ -17,10 +17,19 @@ export default function Page() {
   useEffect(() => {
     async function loadGames() {
       try {
-        const response = await fetch("/storage/data/games.json");
+        const response = await fetch("/api/g-data");
         const data = await response.json();
-        setGames(data.games);
+
+        const sorted = data.games.sort((a: any, b: any) => {
+          if (a.label === "Request Games") return -1;
+          if (b.label === "Request Games") return 1;
+        });
+
+        console.log("😭");
+        console.log("Sorted games:", sorted);
+        setGames(sorted);
       } catch (error) {
+        console.error("Fetch error:", error);
         setGames(`Error loading games: ${error}`);
       }
     }
@@ -144,7 +153,6 @@ export default function Page() {
               {filteredGames ? (
                 Array.isArray(filteredGames) ? (
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {filteredGames.map((game: any, index: number) => (
                       <GameCard key={index} game={game} />
                     ))}
