@@ -92,6 +92,7 @@ Or use the buttons below (You will have to set up enviroment variables)
 >
 > [![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/PeteZah-Games/petezah-next)
 > [![Open in Codenywhere](https://codeanywhere.com/img/open-in-codeanywhere-btn.svg)](https://app.codeanywhere.com/#https://github.com/PeteZah-Games/petezah-next)
+
 > [!WARNING]  
 > If the page appears to be blocked by an AI blocker, navigate to [yourlink]/aab. That will automatically open our site in an about:blank, and you will not need any extra configuration
 
