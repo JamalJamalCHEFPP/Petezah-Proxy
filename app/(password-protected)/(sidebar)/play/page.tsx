@@ -7,13 +7,14 @@ import {
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import WidgetBotCrate from "@/ui/play/crate";
-import { FaDiscord } from "react-icons/fa";
+import { FaDiscord, FaStar } from "react-icons/fa";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const [isRating, setIsRating] = useState<boolean>(false);
 
   const url = searchParams.get("url");
 
@@ -82,11 +83,19 @@ export default function Page() {
       <div className="flex items-center relative justify-center h-[100%]">
         <MarqueeBg />
         <div className="z-1 h-[90%] w-[90%] border-[#0096FF] bg-[#0A1D37] border-2 rounded-2xl p-2! flex flex-col">
-          <iframe
-            className="flex-1 w-full bg-white h-max rounded-t-2xl"
-            src={`${url}`}
-            ref={iframeRef}
-          ></iframe>
+          {isRating == false ? (
+            <iframe
+              className="flex-1 w-full bg-white h-max rounded-t-2xl"
+              src={`${url}`}
+              ref={iframeRef}
+            ></iframe>
+          ) : (
+            <>
+              <div className="flex items-center justify-center flex-1 w-full bg-[#0A1D37] h-max">
+                <h1>We&apos;re working on this feature!</h1>
+              </div>
+            </>
+          )}
           <div className="bg-black h-[100px] w-full rounded-b-2xl border-white border-t-2 flex justify-around items-center">
             <button
               type="button"
@@ -119,6 +128,16 @@ export default function Page() {
               className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
             >
               <FaDiscord size={30} />
+            </button>
+            <button
+              type="button"
+              title="Discord information"
+              onClick={() => {
+                setIsRating(!isRating);
+              }}
+              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+            >
+              <FaStar size={30} />
             </button>
           </div>
         </div>
