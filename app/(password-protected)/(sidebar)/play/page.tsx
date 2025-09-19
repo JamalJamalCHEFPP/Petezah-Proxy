@@ -85,24 +85,31 @@ export default function Page() {
           ></iframe>
           <div className="bg-black h-[100px] w-full rounded-b-2xl border-white border-t-2 flex justify-around items-center">
             <button
+              title="Refresh iframe"
               onClick={refreshIframe}
               className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
             >
               <ArrowPathIcon width={30} height={30} />
             </button>
             <button
+              type="button"
+              title="Toggle fullscreen"
               onClick={toggleFullscreen}
               className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
             >
               <BsFullscreen size={20} />
             </button>
             <button
+              type="button"
+              title="Open in new tab"
               onClick={openIframeSource}
               className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
             >
               <ArrowTopRightOnSquareIcon width={30} height={30} />
             </button>
             <button
+              type="button"
+              title="Discord information"
               onClick={DCMessage}
               className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
             >
