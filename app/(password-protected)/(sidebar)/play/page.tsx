@@ -7,7 +7,7 @@ import {
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import WidgetBotCrate from "@/ui/play/crate";
 import { FaDiscord } from "react-icons/fa";
 
