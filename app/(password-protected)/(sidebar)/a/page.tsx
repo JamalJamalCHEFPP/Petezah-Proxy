@@ -14,7 +14,7 @@ const apps = [
   {
     label: "PeteAI",
     url: "/pages/other/ai/iframe.html",
-    imageUrl: "/storage/images/logo-png-removebg-preview.png",
+    imageUrl: "/storage/images/PeteAI.png",
   },
   {
     label: "PeteMusic",

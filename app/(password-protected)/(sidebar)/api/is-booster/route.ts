@@ -1,14 +1,15 @@
-import { createAdminClient } from "@/utils/supabase/admin";
+import { createServerClient } from "@supabase/ssr";
+import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 
 const GUILD_ID = "1337108365591187640";
+
 const ROLE_IDS = {
   booster: "1341154772006211666",
   mod: "1409270467226894387",
   developer: "1406629094623412244",
 };
 
-// just for colors
 const ROLE_IDS_EXTD = {
   owner: "1337134692331290695",
   booster: "1341154772006211666",
@@ -20,29 +21,62 @@ const ROLE_IDS_EXTD = {
   og: "1339769949131902976",
   trueOg: "1340119317060255795",
   wRizz: "1340142743250272286",
-  chillGuy: "1345248092299071549"
-}
+  chillGuy: "1345248092299071549",
+};
 
-export async function POST(req: Request) {
+export async function POST() {
   try {
-    const body = await req.json();
-    const userId = body.user_id;
+    const cookieStore = await cookies();
 
-    if (!userId || typeof userId !== "string") {
-      return NextResponse.json(
-        { error: "Missing or invalid user_id" },
-        { status: 400 }
-      );
+    const supabase = createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set({ name, value, ...options });
+            }
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser();
+
+    if (authError || !user) {
+      return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    const { data, error } = await createAdminClient()
+    const { data, error } = await createServerClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        cookies: {
+          getAll() {
+            return cookieStore.getAll();
+          },
+          setAll(cookiesToSet) {
+            for (const { name, value, options } of cookiesToSet) {
+              cookieStore.set({ name, value, ...options });
+            }
+          },
+        },
+      }
+    )
       .from("profiles_private")
       .select("discord_id")
-      .eq("id", userId)
+      .eq("id", user.id)
       .single();
 
-    if (error) {
-      return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error || !data) {
+      return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
     const memberRes = await fetch(
@@ -54,21 +88,27 @@ export async function POST(req: Request) {
       }
     );
 
-    const dcData = await memberRes.json();
+    if (!memberRes.ok) {
+      return NextResponse.json(
+        { error: "Discord user not found" },
+        { status: 404 }
+      );
+    }
 
+    const dcData = await memberRes.json();
     const userRoles: string[] = dcData.roles ?? [];
 
     const isBooster = userRoles.includes(ROLE_IDS.booster);
     const isMod = userRoles.includes(ROLE_IDS.mod);
     const isDeveloper = userRoles.includes(ROLE_IDS.developer);
-    const isGenius = userRoles.includes(ROLE_IDS_EXTD.genius)
-    const isPizzaParty = userRoles.includes(ROLE_IDS_EXTD.pizzaParty)
-    const isAdmin = userRoles.includes(ROLE_IDS_EXTD.admin)
-    const isOwner = userRoles.includes(ROLE_IDS_EXTD.owner)
-    const isOg = userRoles.includes(ROLE_IDS_EXTD.og)
-    const isTrueOg = userRoles.includes(ROLE_IDS_EXTD.trueOg)
-    const isWRizz = userRoles.includes(ROLE_IDS_EXTD.wRizz)
-    const isChillGuy = userRoles.includes(ROLE_IDS_EXTD.chillGuy)
+    const isGenius = userRoles.includes(ROLE_IDS_EXTD.genius);
+    const isPizzaParty = userRoles.includes(ROLE_IDS_EXTD.pizzaParty);
+    const isAdmin = userRoles.includes(ROLE_IDS_EXTD.admin);
+    const isOwner = userRoles.includes(ROLE_IDS_EXTD.owner);
+    const isOg = userRoles.includes(ROLE_IDS_EXTD.og);
+    const isTrueOg = userRoles.includes(ROLE_IDS_EXTD.trueOg);
+    const isWRizz = userRoles.includes(ROLE_IDS_EXTD.wRizz);
+    const isChillGuy = userRoles.includes(ROLE_IDS_EXTD.chillGuy);
 
     const elevated = isBooster || isMod || isDeveloper;
 
@@ -86,7 +126,7 @@ export async function POST(req: Request) {
     for (const [key, id] of Object.entries(ROLE_IDS_EXTD)) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const role = allRoles.find((r: any) => r.id === id);
-      colors[key] = role ? (role.colors) : null;
+      colors[key] = role ? role.colors : null;
     }
 
     return NextResponse.json({
@@ -104,8 +144,11 @@ export async function POST(req: Request) {
       elevated,
       colors,
     });
-  } catch (error) {
-    console.error("Error in /api/is-booster:", error);
-    return NextResponse.json({ error: "Internal Server Error" }, { status: 500 });
+  } catch (err) {
+    console.error("Error in /api/is-booster:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error" },
+      { status: 500 }
+    );
   }
 }
