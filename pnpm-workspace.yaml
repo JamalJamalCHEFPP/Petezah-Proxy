@@ -1,0 +1,7 @@
+onlyBuiltDependencies:
+  - '@biomejs/biome'
+  - '@mercuryworkshop/scramjet'
+  - '@tailwindcss/oxide'
+  - sharp
+  - supabase
+  - unrs-resolver
