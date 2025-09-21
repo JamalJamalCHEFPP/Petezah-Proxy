@@ -8,6 +8,8 @@ import { GameData } from "@/lib/types";
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
+
+    // im no longer using the actual mongo id bc its inconsistent
     const { gameId, rating } = body;
 
     if (!gameId || typeof rating !== "number") {
@@ -44,27 +46,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Not authenticated" }, { status: 401 });
     }
 
-    await gamesColl.updateOne({ _id: new ObjectId(gameId as string) }, [
-      {
-        $set: {
-          stars: {
-            $concatArrays: [
-              {
-                $filter: {
-                  input: { $ifNull: ["$stars", []] },
-                  as: "s",
-                  cond: { $ne: ["$$s.userId", user.id] },
-                },
-              },
-              [{ userId: user.id, rating }],
-            ],
-          },
+    const alreadyRated = await gamesColl.findOne(
+      { _id: new ObjectId(gameId as string), "stars.userId": user.id },
+      { projection: { stars: 1 } }
+    );
+
+    if (alreadyRated) {
+      await gamesColl.updateOne(
+        { _id: new ObjectId(gameId as string), "stars.userId": user.id },
+        { $set: { "stars.$.rating": rating } }
+      );
+    } else {
+      await gamesColl.updateOne(
+        {
+          _id: new ObjectId(gameId as string),
+          "stars.userId": { $ne: user.id },
         },
-      },
-    ]);
+        { $push: { stars: { userId: user.id, rating } } }
+      );
+    }
 
     const updatedGame = await gamesColl.findOne(
-      { _id: gameId },
+      { _id: new ObjectId(gameId as string) },
       { projection: { stars: 1 } }
     );
 

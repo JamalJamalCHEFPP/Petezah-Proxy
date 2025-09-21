@@ -2,7 +2,7 @@ import { connectToDatabases } from "@/lib/mongodb";
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
-import { Collection } from "mongodb";
+import { Collection, ObjectId } from "mongodb";
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // just fetch the stars array for the game
     const game = await gamesColl.findOne(
-      { _id: gameId },
+      { _id: new ObjectId(gameId as string) },
       { projection: { stars: 1 } }
     );
 
