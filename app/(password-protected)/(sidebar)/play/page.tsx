@@ -7,16 +7,32 @@ import {
   ArrowPathIcon,
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import WidgetBotCrate from "@/ui/play/crate";
-import { FaDiscord, FaStar } from "react-icons/fa";
+import { FaDiscord, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
+import { GameData } from "@/lib/types";
+import { createClient } from "@/utils/supabase/client";
+import { User } from "@supabase/supabase-js";
 
 export default function Page() {
   const searchParams = useSearchParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const [isRating, setIsRating] = useState<boolean>(false);
+  const [gameData, setGameData] = useState<GameData>();
+  const [user, setUser] = useState<User | null>(null);
 
   const url = searchParams.get("url");
+  const id = searchParams.get("id");
+
+  useEffect(() => {
+    const supabase = createClient();
+
+    async function fetchData() {
+      const { data: userData } = await supabase.auth.getUser();
+      setUser(userData.user);
+    }
+    fetchData();
+  }, []);
 
   function toggleFullscreen() {
     const iframe = iframeRef.current;
@@ -65,6 +81,59 @@ export default function Page() {
     }
   }
 
+  let averageRating: number | null = null;
+
+  if (gameData?.stars && gameData.stars.length > 0) {
+    averageRating =
+      gameData.stars.reduce((sum, s) => sum + s.rating, 0) /
+      gameData.stars.length;
+  }
+
+  function addStar(userId: string, rating: number) {
+    setGameData((prev) => {
+      if (!prev) return prev;
+
+      const stars = prev.stars ? [...prev.stars] : [];
+
+      const index = stars.findIndex((s) => s.userId === userId);
+
+      if (index >= 0) {
+        stars[index] = { userId, rating };
+      } else {
+        stars.push({ userId, rating });
+      }
+
+      return { ...prev, stars };
+    });
+    fetch("/api/rate-g-stars", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        gameId: id,
+        rating,
+      }),
+    });
+  }
+
+  useEffect(() => {
+    async function fetchGameData() {
+      const res = await fetch("/api/previous-g-star-rating", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          gameId: id,
+        }),
+      });
+
+      setGameData(await res.json());
+    }
+    fetchGameData();
+  }, [id]);
+
   if (!url) {
     return (
       <div className="flex items-center relative justify-center h-[100%]">
@@ -74,6 +143,50 @@ export default function Page() {
             No URL provided
           </h1>
         </div>
+      </div>
+    );
+  }
+
+  type StarRatingProps = {
+    rating: number;
+    onRate: (rating: number) => void;
+    userRating?: number;
+  };
+
+  function StarRating({ rating, onRate, userRating }: StarRatingProps) {
+    const [hoverRating, setHoverRating] = useState(0);
+
+    const displayRating = hoverRating || userRating || rating;
+
+    return (
+      <div className="flex items-center">
+        {[1, 2, 3, 4, 5].map((i) => {
+          let icon;
+          if (displayRating >= i) icon = <FaStar size={40} />;
+          else if (displayRating >= i - 0.5) icon = <FaStarHalfAlt size={40} />;
+          else icon = <FaRegStar size={40} />;
+
+          return (
+            <button
+              key={i}
+              type="button"
+              onClick={() => onRate(i)}
+              onMouseEnter={() => setHoverRating(i)}
+              onMouseLeave={() => setHoverRating(0)}
+              className="text-yellow-400 transition-colors hover:text-yellow-500 px-0.5!"
+            >
+              {icon}
+            </button>
+          );
+        })}
+        <span className="ml-2 text-xl font-semibold text-center text-white">
+          - {rating.toFixed(1)}{" "}
+          {gameData &&
+            gameData.stars &&
+            `(${gameData.stars.length} rating${
+              gameData.stars.length !== 1 ? "s" : ""
+            })`}
+        </span>
       </div>
     );
   }
@@ -91,8 +204,17 @@ export default function Page() {
             ></iframe>
           ) : (
             <>
-              <div className="flex items-center justify-center flex-1 w-full bg-[#0A1D37] h-max">
-                <h1>We&apos;re working on this feature!</h1>
+              <div className="flex items-center justify-center flex-col gap-2 flex-1 w-full bg-[#0A1D37] h-max">
+                <h1 className="text-4xl">Rate this game!</h1>
+                {user && (
+                  <StarRating
+                    rating={averageRating || 0}
+                    userRating={
+                      gameData?.stars?.find((s) => s.userId === user.id)?.rating
+                    }
+                    onRate={(r) => addStar(user.id, r)}
+                  />
+                )}
               </div>
             </>
           )}
@@ -129,16 +251,18 @@ export default function Page() {
             >
               <FaDiscord size={30} />
             </button>
-            <button
-              type="button"
-              title="Discord information"
-              onClick={() => {
-                setIsRating(!isRating);
-              }}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
-            >
-              <FaStar size={30} />
-            </button>
+            {id && (
+              <button
+                type="button"
+                title="Rate game"
+                onClick={() => {
+                  setIsRating(!isRating);
+                }}
+                className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+              >
+                <FaStar size={30} />
+              </button>
+            )}
           </div>
         </div>
         <WidgetBotCrate />
