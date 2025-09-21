@@ -68,9 +68,11 @@ export default function Page() {
                 `&id=${game._id}`
               }
             >
-              {avgStars != 0 && (
-                <p className="absolute top-0 right-0 z-10 flex items-center justify-end pt-1! pr-3! pl-4! text-sm rounded-bl-2xl text-white bg-black/60">
-                  <span className="mr-1">{avgStars}</span>
+              {game.stars && game.stars.length > 0 && (
+                <p className="absolute top-0 right-0 z-10 flex items-center justify-end pt-1! pl-4! pr-3! text-sm text-white rounded-bl-2xl bg-black/60">
+                  <span className="mr-0.5!">
+                    {avgStars} ({game.stars.length})
+                  </span>
                   <FaStar className="text-yellow-400 align-middle" />
                 </p>
               )}
