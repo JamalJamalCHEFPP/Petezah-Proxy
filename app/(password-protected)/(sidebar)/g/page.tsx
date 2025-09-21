@@ -6,6 +6,8 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GameData } from "@/lib/types";
+import { FaStar } from "react-icons/fa";
 
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,6 +25,19 @@ export default function Page() {
         const sorted = data.games.sort((a: any, b: any) => {
           if (a.label === "Request Games") return -1;
           if (b.label === "Request Games") return 1;
+
+          const avgA =
+            a.stars && a.stars.length > 0
+              ? a.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+                a.stars.length
+              : 0;
+          const avgB =
+            b.stars && b.stars.length > 0
+              ? b.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+                b.stars.length
+              : 0;
+
+          return avgB - avgA;
         });
 
         setGames(sorted);
@@ -35,28 +50,39 @@ export default function Page() {
     loadGames();
   }, []);
 
-  function GameCard({
-    game,
-  }: {
-    game: { label: string; imageUrl: string; url: string, _id: string };
-  }) {
+  function GameCard({ game }: { game: GameData }) {
+    const avgStars =
+      game.stars && game.stars.length > 0
+        ? game.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+          game.stars.length
+        : 0;
     return (
       <>
         <div className="flex items-center justify-center">
           <div className="relative w-[200px] h-[170px] overflow-hidden transition-transform duration-500 rounded-2xl border-white border-2 bg-black flex justify-center items-center hover:scale-110 group">
             <Link
-              className="w-full h-[170px]! flex justify-center items-center"
-              href={game.url.replace("/iframe.html", "/play") + "/index.html" + `&id=${game._id}`}
+              className="relative w-full h-[170px] flex justify-center items-center"
+              href={
+                game.url.replace("/iframe.html", "/play") +
+                "/index.html" +
+                `&id=${game._id}`
+              }
             >
+              {avgStars != 0 && (
+                <p className="absolute top-0 right-0 z-10 flex items-center justify-end w-full pr-2! text-sm text-white bg-black/60">
+                  <span className="mr-1">{avgStars}</span>
+                  <FaStar className="text-yellow-400 align-middle" />
+                </p>
+              )}
               <Image
-                className="object-cover! p-2 h-full hover:scale-110 transition-all duration-500"
+                className="z-0 object-cover w-full h-full p-2 transition-all duration-500 hover:scale-110"
                 width={200}
                 height={170}
                 alt={game.label}
                 src={game.imageUrl}
                 unoptimized={process.env.NODE_ENV === "development"}
               />
-              <p className="absolute bottom-0 right-0 text-center bg-black/60 p-[10px] w-full">
+              <p className="absolute bottom-0 right-0 text-center bg-black/60 p-[10px] w-full z-10 text-white">
                 {game.label}
               </p>
             </Link>
