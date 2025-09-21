@@ -69,7 +69,7 @@ export default function Page() {
               }
             >
               {avgStars != 0 && (
-                <p className="absolute top-0 right-0 z-10 flex items-center justify-end w-full pr-2! text-sm text-white bg-black/60">
+                <p className="absolute top-0 right-0 z-10 flex items-center justify-end pt-1! pr-3! pl-4! text-sm rounded-bl-2xl text-white bg-black/60">
                   <span className="mr-1">{avgStars}</span>
                   <FaStar className="text-yellow-400 align-middle" />
                 </p>
