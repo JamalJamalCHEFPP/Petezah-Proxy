@@ -105,6 +105,7 @@ export default function Page() {
 
       return { ...prev, stars };
     });
+    
     fetch("/api/rate-g-stars", {
       method: "POST",
       headers: {
