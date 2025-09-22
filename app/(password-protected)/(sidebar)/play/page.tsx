@@ -90,6 +90,8 @@ export default function Page() {
   }
 
   function addStar(userId: string, rating: number) {
+    if (!user) return;
+
     setGameData((prev) => {
       if (!prev) return prev;
 
@@ -105,7 +107,7 @@ export default function Page() {
 
       return { ...prev, stars };
     });
-    
+
     fetch("/api/rate-g-stars", {
       method: "POST",
       headers: {
@@ -206,16 +208,16 @@ export default function Page() {
           ) : (
             <>
               <div className="flex items-center justify-center flex-col gap-2 flex-1 w-full bg-[#0A1D37] h-max">
-                <h1 className="text-4xl">Rate this game!</h1>
-                {user && (
-                  <StarRating
-                    rating={averageRating || 0}
-                    userRating={
-                      gameData?.stars?.find((s) => s.userId === user.id)?.rating
-                    }
-                    onRate={(r) => addStar(user.id, r)}
-                  />
-                )}
+                <h1 className="text-4xl">Ratings for this game</h1>
+
+                <StarRating
+                  rating={averageRating || 0}
+                  userRating={
+                    user ? gameData?.stars?.find((s) => s.userId === user.id)?.rating : undefined
+                  }
+                  onRate={user ? (r) => addStar(user.id, r) : () => {}}
+                />
+                {!user ? <p>Sign in to rate a game</p> : <p>Click on a star above to rate this game</p>}
               </div>
             </>
           )}
