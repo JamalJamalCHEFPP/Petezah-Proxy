@@ -107,7 +107,7 @@ export default function Sidebar({ children }: { children: React.ReactNode }) {
         {/* sidebar */}
         <aside
           className={clsx(
-            "sidebar hidden md:block h-full md:ml-[16px]! md:mt-[16px]! md:mb-[16px]! md:h-[calc(100vh-32px)]! md:rounded-[16px]! border-white border-r-2 md:border-2 transition-all duration-400",
+            "overflow-y-auto sidebar hidden md:block h-full md:ml-[16px]! md:mt-[16px]! md:mb-[16px]! md:h-[calc(100vh-32px)]! md:rounded-[16px]! border-white border-r-2 md:border-2 transition-all duration-400",
             sidebarToggled ? "sidebar-expanded w-[270px]" : "collapsed"
           )}
         >
