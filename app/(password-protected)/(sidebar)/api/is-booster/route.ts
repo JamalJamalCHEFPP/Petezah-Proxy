@@ -9,6 +9,8 @@ const ROLE_IDS = {
   mod: "1409270467226894387",
   developer: "1406629094623412244",
   elevated: "1419831377871896656",
+  admin: "1337109489513533442",
+  pznAdmin: "1420377727784976385",
 };
 
 const ROLE_IDS_EXTD = {
@@ -17,6 +19,7 @@ const ROLE_IDS_EXTD = {
   mod: "1409270467226894387",
   developer: "1406629094623412244",
   elevated: "1419831377871896656",
+  pznAdmin: "1420377727784976385",
   genius: "1343407711823597610",
   pizzaParty: "1343315458081689622",
   admin: "1337109489513533442",
@@ -104,6 +107,7 @@ export async function POST() {
     const isMod = userRoles.includes(ROLE_IDS.mod);
     const isDeveloper = userRoles.includes(ROLE_IDS.developer);
     const isElevated = userRoles.includes(ROLE_IDS.elevated);
+    const isPznAdmin = userRoles.includes(ROLE_IDS.pznAdmin);
     const isGenius = userRoles.includes(ROLE_IDS_EXTD.genius);
     const isPizzaParty = userRoles.includes(ROLE_IDS_EXTD.pizzaParty);
     const isAdmin = userRoles.includes(ROLE_IDS_EXTD.admin);
@@ -115,7 +119,11 @@ export async function POST() {
 
     // isElevated is the role (just for non-boosters/mods/developers) that gives access to elevated features, but elevated encompasses all
 
-    const elevated = isBooster || isMod || isDeveloper || isElevated;
+    const elevated = isBooster || isMod || isDeveloper || isElevated || isAdmin;
+
+    // pzm admin is a separate role that gives access to extra rating features
+
+    const pznAdmin = isMod || isDeveloper || isPznAdmin || isAdmin;
 
     const rolesRes = await fetch(
       `https://discord.com/api/v10/guilds/${GUILD_ID}/roles`,
@@ -143,11 +151,13 @@ export async function POST() {
       isPizzaParty,
       isAdmin,
       isOwner,
+      isPznAdmin,
       isOg,
       isTrueOg,
       isWRizz,
       isChillGuy,
       elevated,
+      pznAdmin,
       colors,
     });
   } catch (err) {
