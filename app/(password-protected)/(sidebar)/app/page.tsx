@@ -95,7 +95,7 @@ export default function Page() {
             <button
               title="fullscreen"
               onClick={toggleFullscreen}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-5! hover:scale-110 transition-all duration-500"
             >
               <BsFullscreen size={20} />
             </button>
