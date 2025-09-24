@@ -194,6 +194,44 @@ export default function Page() {
     );
   }
 
+  function ModOptions() {
+    const [pznAdmin, setIsPZNAdmin] = useState<boolean | null>(null);
+
+    const supabase = createClient();
+
+    useEffect(() => {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        const user = session?.user;
+        if (!user) return;
+
+        const res = await fetch(`/api/is-booster?user_id=${user.id}`, {
+          method: "POST",
+          body: JSON.stringify({ user_id: user.id }),
+        });
+
+        const json = await res.json();
+
+        if (res.ok) {
+          setIsPZNAdmin(json.pznAdmin);
+        } else {
+          setIsPZNAdmin(false);
+        }
+      });
+    }, [supabase.auth]);
+
+    return (
+      <p>
+        {pznAdmin === null ? (
+          <>Loading...</>
+        ) : (
+          <>
+            You&apos;re a PZN Admin, soon you will be able to add tags to games.
+          </>
+        )}
+      </p>
+    );
+  }
+
   return (
     <>
       <div className="flex items-center relative justify-center h-[100%]">
@@ -213,11 +251,19 @@ export default function Page() {
                 <StarRating
                   rating={averageRating || 0}
                   userRating={
-                    user ? gameData?.stars?.find((s) => s.userId === user.id)?.rating : undefined
+                    user
+                      ? gameData?.stars?.find((s) => s.userId === user.id)
+                          ?.rating
+                      : undefined
                   }
                   onRate={user ? (r) => addStar(user.id, r) : () => {}}
                 />
-                {!user ? <p>Sign in to rate a game</p> : <p>Click on a star above to rate this game</p>}
+                {!user ? (
+                  <p>Sign in to rate a game</p>
+                ) : (
+                  <p>Click on a star above to rate this game</p>
+                )}
+                <ModOptions />
               </div>
             </>
           )}
