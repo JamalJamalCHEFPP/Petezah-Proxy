@@ -119,11 +119,11 @@ export async function POST() {
 
     // isElevated is the role (just for non-boosters/mods/developers) that gives access to elevated features, but elevated encompasses all
 
-    const elevated = isBooster || isMod || isDeveloper || isElevated || isAdmin;
+    const elevated = isBooster || isMod || isDeveloper || isElevated || isAdmin || isOwner;
 
     // pzm admin is a separate role that gives access to extra rating features
 
-    const pznAdmin = isMod || isDeveloper || isPznAdmin || isAdmin;
+    const pznAdmin = isMod || isDeveloper || isPznAdmin || isAdmin || isOwner;
 
     const rolesRes = await fetch(
       `https://discord.com/api/v10/guilds/${GUILD_ID}/roles`,

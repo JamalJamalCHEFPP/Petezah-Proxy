@@ -17,6 +17,6 @@ export interface GameData {
   label: string;
   url: string;
   imageUrl: string;
-  catagories: string[];
+  categories: string[];
   stars?: { userId: string; rating: number }[];
 }
