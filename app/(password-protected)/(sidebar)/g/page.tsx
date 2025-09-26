@@ -111,9 +111,6 @@ export default function Page() {
                       className={`flex items-center justify-center px-3! ${c.bg} relative`}
                     >
                       {c.icon}
-                      {idx !== game.categories!.length - 1 && (
-                        <span className="absolute right-0 top-0 h-full w-[2px] bg-white/40 rotate-12 origin-center" />
-                      )}
                     </span>
                   );
                 })}
