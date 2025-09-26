@@ -98,12 +98,14 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Game not found" }, { status: 404 });
     }
 
-    // categories is misspelled in the db as catagories :) thanks petezah
-    const categories = game.catagories ?? [];
+    // categories is misspelled in the db as categories :) thanks petezah
+    // smh it wasnt so i fixed
+
+    const categories = game.categories ?? [];
 
     let updateQuery;
     if (!categories.includes(tag)) {
-      updateQuery = { $addToSet: { catagories: tag } };
+      updateQuery = { $addToSet: { categories: tag } };
     } else {
       return NextResponse.json(
         { error: "Tag already exists" },
@@ -121,7 +123,7 @@ export async function POST(req: NextRequest) {
       { projection: { categories: 1 } }
     );
 
-    return NextResponse.json({ catagories: updated?.catagories ?? [] });
+    return NextResponse.json({ categories: updated?.categories ?? [] });
   } catch (err) {
     console.error(err);
     return NextResponse.json(

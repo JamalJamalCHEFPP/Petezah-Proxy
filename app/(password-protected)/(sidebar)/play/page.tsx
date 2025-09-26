@@ -19,23 +19,36 @@ import ModOptions from "@/ui/play/mod-options";
 export default function Page() {
   const searchParams = useSearchParams();
   const iframeRef = useRef<HTMLIFrameElement>(null);
-  const [isRating, setIsRating] = useState<boolean>(false);
+  const [isRating, setIsRating] = useState(false);
   const [gameData, setGameData] = useState<GameData>();
   const [user, setUser] = useState<User | null>(null);
 
-  const url = searchParams.get("url");
-  const id = searchParams.get("id");
+  const decodedUrl = decodeURIComponent(searchParams.get("url") || "");
+  const id = searchParams.get("id") || null;
+
+  console.log("Decoded URL:", decodedUrl);
+  console.log("Game ID:", id);
 
   useEffect(() => {
     const supabase = createClient();
-    async function fetchData() {
+    async function fetchSession() {
       const {
         data: { session },
       } = await supabase.auth.getSession();
       setUser(session?.user ?? null);
     }
-    fetchData();
+    fetchSession();
   }, []);
+
+  useEffect(() => {
+    async function fetchGame() {
+      const res = await fetch("/api/g-data");
+      const data = await res.json();
+      const game = data.games.find((g: GameData) => g._id === id);
+      if (game) setGameData(game);
+    }
+    if (id) fetchGame();
+  }, [id]);
 
   function toggleFullscreen() {
     const iframe = iframeRef.current;
@@ -50,15 +63,11 @@ export default function Page() {
   }
 
   function refreshIframe() {
-    if (iframeRef.current) {
-      iframeRef.current.src = iframeRef.current.src;
-    }
+    if (iframeRef.current) iframeRef.current.src = iframeRef.current.src;
   }
 
   function openIframeSource() {
-    if (iframeRef.current) {
-      window.open(iframeRef.current.src, "_blank");
-    }
+    if (iframeRef.current) window.open(iframeRef.current.src, "_blank");
   }
 
   function DCMessage() {
@@ -75,7 +84,7 @@ export default function Page() {
   }
 
   let averageRating: number | null = null;
-  if (gameData?.stars && gameData.stars.length > 0) {
+  if (gameData?.stars?.length) {
     averageRating =
       gameData.stars.reduce((sum, s) => sum + s.rating, 0) /
       gameData.stars.length;
@@ -85,52 +94,18 @@ export default function Page() {
     if (!user) return;
     setGameData((prev) => {
       if (!prev) return prev;
-
       const stars = prev.stars ? [...prev.stars] : [];
       const index = stars.findIndex((s) => s.userId === userId);
-
-      if (index !== -1) {
-        stars[index] = { userId, rating };
-      } else {
-        stars.push({ userId, rating });
-      }
-
-      return {
-        ...prev,
-        stars,
-        catagories: prev.catagories ?? [],
-      };
+      if (index !== -1) stars[index] = { userId, rating };
+      else stars.push({ userId, rating });
+      return { ...prev, stars, categories: prev.categories ?? [] };
     });
-
     await fetch("/api/rate-g-stars", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
       body: JSON.stringify({ gameId: id, rating }),
     });
-  }
-
-  useEffect(() => {
-    async function fetchGameData() {
-      const res = await fetch("/api/g-data");
-      const data = await res.json();
-      const game = data.games.find((g: GameData) => g._id === id);
-      if (game) setGameData(game);
-    }
-    if (id) fetchGameData();
-  }, [id]);
-
-  if (!url) {
-    return (
-      <div className="flex items-center relative justify-center h-[100%]">
-        <MarqueeBg />
-        <div>
-          <h1 className="text-center p-[50px]! rounded-[12px] border-2 text-3xl border-[#0096FF] backdrop-blur-md backdrop-filter backdrop-opacity-50 bg-[#0A1D37]">
-            No URL provided
-          </h1>
-        </div>
-      </div>
-    );
   }
 
   type StarRatingProps = {
@@ -164,8 +139,7 @@ export default function Page() {
         })}
         <span className="ml-2 text-xl font-semibold text-center text-white">
           - {rating.toFixed(1)}{" "}
-          {gameData &&
-            gameData.stars &&
+          {gameData?.stars &&
             `(${gameData.stars.length} rating${
               gameData.stars.length !== 1 ? "s" : ""
             })`}
@@ -174,89 +148,95 @@ export default function Page() {
     );
   }
 
-  return (
-    <>
+  if (!decodedUrl) {
+    return (
       <div className="flex items-center relative justify-center h-[100%]">
         <MarqueeBg />
-        <div className="z-1 h-[90%] w-[90%] border-[#0096FF] bg-[#0A1D37] border-2 rounded-2xl p-2! flex flex-col">
-          {isRating == false ? (
-            <iframe
-              className="flex-1 w-full bg-white h-max rounded-t-2xl"
-              src={`${url}`}
-              ref={iframeRef}
-            ></iframe>
-          ) : (
-            <>
-              <div className="flex items-center justify-center flex-col gap-2 flex-1 w-full bg-[#0A1D37] h-max">
-                <h1 className="text-4xl">Ratings for this game</h1>
-                <StarRating
-                  rating={averageRating || 0}
-                  userRating={
-                    user
-                      ? gameData?.stars?.find((s) => s.userId === user.id)
-                          ?.rating
-                      : undefined
-                  }
-                  onRate={user ? (r) => addStar(user.id, r) : () => {}}
-                />
-                {!user ? (
-                  <p>Sign in to rate a game</p>
-                ) : (
-                  <p>Click on a star above to rate this game</p>
-                )}
-                <ModOptions gameData={gameData} setGameData={setGameData} />
-              </div>
-            </>
-          )}
-          <div className="bg-black h-[100px] w-full rounded-b-2xl border-white border-t-2 flex justify-around items-center">
-            <button
-              type="button"
-              title="Refresh iframe"
-              onClick={refreshIframe}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
-            >
-              <ArrowPathIcon width={30} height={30} />
-            </button>
-            <button
-              type="button"
-              title="Toggle fullscreen"
-              onClick={toggleFullscreen}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-5! hover:scale-110 transition-all duration-500"
-            >
-              <BsFullscreen size={20} />
-            </button>
-            <button
-              type="button"
-              title="Open in new tab"
-              onClick={openIframeSource}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
-            >
-              <ArrowTopRightOnSquareIcon width={30} height={30} />
-            </button>
-            <button
-              type="button"
-              title="Discord information"
-              onClick={DCMessage}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
-            >
-              <FaDiscord size={30} />
-            </button>
-            {id && (
-              <button
-                type="button"
-                title="Rate game"
-                onClick={() => {
-                  setIsRating(!isRating);
-                }}
-                className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
-              >
-                <FaStar size={30} />
-              </button>
-            )}
-          </div>
+        <div>
+          <h1 className="text-center p-[50px]! rounded-[12px] border-2 text-3xl border-[#0096FF] backdrop-blur-md backdrop-filter backdrop-opacity-50 bg-[#0A1D37]">
+            No URL provided
+          </h1>
         </div>
-        <WidgetBotCrate />
       </div>
-    </>
+    );
+  }
+
+  return (
+    <div className="flex items-center relative justify-center h-[100%]">
+      <MarqueeBg />
+      <div className="z-1 h-[90%] w-[90%] border-[#0096FF] bg-[#0A1D37] border-2 rounded-2xl p-2! flex flex-col">
+        {!isRating ? (
+          <iframe
+            className="flex-1 w-full bg-white h-max rounded-t-2xl"
+            src={decodedUrl}
+            ref={iframeRef}
+          ></iframe>
+        ) : (
+          <div className="flex items-center justify-center flex-col gap-2 flex-1 w-full bg-[#0A1D37] h-max">
+            <h1 className="text-4xl">Ratings for this game</h1>
+            <StarRating
+              rating={averageRating || 0}
+              userRating={
+                user
+                  ? gameData?.stars?.find((s) => s.userId === user.id)?.rating
+                  : undefined
+              }
+              onRate={user ? (r) => addStar(user.id, r) : () => {}}
+            />
+            {!user ? (
+              <p>Sign in to rate a game</p>
+            ) : (
+              <p>Click on a star above to rate this game</p>
+            )}
+            <ModOptions gameData={gameData} setGameData={setGameData} />
+          </div>
+        )}
+        <div className="bg-black h-[100px] w-full rounded-b-2xl border-white border-t-2 flex justify-around items-center">
+          <button
+            type="button"
+            title="Refresh iframe"
+            onClick={refreshIframe}
+            className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+          >
+            <ArrowPathIcon width={30} height={30} />
+          </button>
+          <button
+            type="button"
+            title="Toggle fullscreen"
+            onClick={toggleFullscreen}
+            className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-5! hover:scale-110 transition-all duration-500"
+          >
+            <BsFullscreen size={20} />
+          </button>
+          <button
+            type="button"
+            title="Open in new tab"
+            onClick={openIframeSource}
+            className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+          >
+            <ArrowTopRightOnSquareIcon width={30} height={30} />
+          </button>
+          <button
+            type="button"
+            title="Discord information"
+            onClick={DCMessage}
+            className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+          >
+            <FaDiscord size={30} />
+          </button>
+          {id && (
+            <button
+              type="button"
+              title="Rate game"
+              onClick={() => setIsRating(!isRating)}
+              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+            >
+              <FaStar size={30} />
+            </button>
+          )}
+        </div>
+      </div>
+      <WidgetBotCrate />
+    </div>
   );
 }

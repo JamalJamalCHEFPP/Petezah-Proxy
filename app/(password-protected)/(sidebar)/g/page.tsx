@@ -2,12 +2,37 @@
 "use client";
 
 import MarqueeBg from "@/ui/backgrounds/marquee-bg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { GameData } from "@/lib/types";
-import { FaStar } from "react-icons/fa";
+import {
+  FaBolt,
+  FaBug,
+  FaExclamationTriangle,
+  FaGem,
+  FaStar,
+} from "react-icons/fa";
+
+const categoryIcons: Record<string, { icon: JSX.Element; bg: string }> = {
+  laggy: {
+    icon: <FaBolt className="text-white" />,
+    bg: "bg-blue-500",
+  },
+  duplicate: {
+    icon: <FaExclamationTriangle className="text-white" />,
+    bg: "bg-yellow-500",
+  },
+  featured: {
+    icon: <FaGem className="text-white" />,
+    bg: "bg-green-500",
+  },
+  broken: {
+    icon: <FaBug className="text-white" />,
+    bg: "bg-red-500",
+  },
+};
 
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -56,41 +81,58 @@ export default function Page() {
         ? game.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
           game.stars.length
         : 0;
+
     return (
-      <>
-        <div className="flex items-center justify-center">
-          <div className="relative w-[200px] h-[170px] overflow-hidden transition-transform duration-500 rounded-2xl border-white border-2 bg-black flex justify-center items-center hover:scale-110 group">
-            <Link
-              className="relative w-full h-[170px] flex justify-center items-center"
-              href={
-                game.url.replace("/iframe.html", "/play") +
-                "/index.html" +
-                `&id=${game._id}`
-              }
-            >
-              {game.stars && game.stars.length > 0 && (
-                <p className="absolute top-0 right-0 z-10 flex items-center justify-end pt-1! pl-4! pr-3! text-sm text-white rounded-bl-2xl bg-black/60">
-                  <span className="mr-0.5!">
-                    {avgStars} ({game.stars.length})
+      <div className="flex items-center justify-center m-2!">
+        <div className="relative w-[200px] h-[170px] overflow-hidden transition-transform duration-500 rounded-2xl border-white border-2 bg-black flex justify-center items-center hover:scale-110 group">
+          <Link
+            className="relative w-full h-[170px] flex justify-center items-center"
+            href={`/play?url=${encodeURIComponent(
+              game.url
+                .replace("/iframe.html?url=", "")
+                .replace("/index.html", "") + "/index.html"
+            )}&id=${encodeURIComponent(String(game._id))}`}
+          >
+            {((game.stars && game.stars?.length > 0) ||
+              game.categories?.length > 0) && (
+              <div className="absolute top-0 right-0 z-10 flex items-stretch h-8 overflow-hidden text-sm text-white rounded-bl-2xl">
+                {game.stars && game.stars?.length > 0 && (
+                  <span className="flex items-center justify-center bg-black/70 px-2!">
+                    {avgStars.toFixed(1)} ({game.stars.length})
+                    <FaStar className="ml-1 text-yellow-400" />
                   </span>
-                  <FaStar className="text-yellow-400 align-middle" />
-                </p>
-              )}
-              <Image
-                className="z-0 object-cover w-full h-full p-2 transition-all duration-500 hover:scale-110"
-                width={200}
-                height={170}
-                alt={game.label}
-                src={game.imageUrl}
-                unoptimized={process.env.NODE_ENV === "development"}
-              />
-              <p className="absolute bottom-0 right-0 text-center bg-black/60 p-[10px] w-full z-10 text-white">
-                {game.label}
-              </p>
-            </Link>
-          </div>
+                )}
+                {game.categories?.map((cat, idx) => {
+                  const c = categoryIcons[cat];
+                  if (!c) return null;
+                  return (
+                    <span
+                      key={idx}
+                      className={`flex items-center justify-center px-3! ${c.bg} relative`}
+                    >
+                      {c.icon}
+                      {idx !== game.categories!.length - 1 && (
+                        <span className="absolute right-0 top-0 h-full w-[2px] bg-white/40 rotate-12 origin-center" />
+                      )}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <Image
+              className="z-0 object-cover w-full h-full transition-all duration-500 hover:scale-110"
+              width={200}
+              height={170}
+              alt={game.label}
+              src={game.imageUrl}
+              unoptimized={process.env.NODE_ENV === "development"}
+            />
+            <p className="absolute bottom-0 right-0 text-center bg-black/60 px-2! w-full z-10 text-white">
+              {game.label}
+            </p>
+          </Link>
         </div>
-      </>
+      </div>
     );
   }
 

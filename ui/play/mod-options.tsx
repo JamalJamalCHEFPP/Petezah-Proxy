@@ -32,10 +32,10 @@ export default function ModOptions({
   async function addTag() {
     if (!gameData || !tagToAdd) return;
 
-    const prevTags = gameData.catagories ?? [];
+    const prevTags = gameData.categories ?? [];
     setGameData({
       ...gameData,
-      catagories: [...prevTags, tagToAdd],
+      categories: [...prevTags, tagToAdd],
     });
 
     const res = await fetch("/api/add-tag-to-game", {
@@ -50,7 +50,7 @@ export default function ModOptions({
         prev
           ? {
               ...prev,
-              catagories: prevTags,
+              categories: prevTags,
             }
           : prev
       );
@@ -63,10 +63,10 @@ export default function ModOptions({
   async function removeTag() {
     if (!gameData || !tagToAdd) return;
 
-    const prevTags = gameData.catagories ?? [];
+    const prevTags = gameData.categories ?? [];
     setGameData({
       ...gameData,
-      catagories: prevTags.filter((t) => t !== tagToAdd),
+      categories: prevTags.filter((t) => t !== tagToAdd),
     });
 
     const res = await fetch("/api/remove-tag-from-game", {
@@ -81,7 +81,7 @@ export default function ModOptions({
         prev
           ? {
               ...prev,
-              catagories: prevTags,
+              categories: prevTags,
             }
           : prev
       );
@@ -99,8 +99,8 @@ export default function ModOptions({
         <>
           <div className="flex justify-center">
             <p>
-              Categories: {gameData?.catagories && gameData.catagories.length > 0
-                ? gameData.catagories.join(", ")
+              Categories: {gameData?.categories && gameData.categories.length > 0
+                ? gameData.categories.join(", ")
                 : "N/A"}
             </p>
           </div>

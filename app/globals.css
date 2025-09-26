@@ -309,6 +309,23 @@ body {
   display: none;
 }
 
+.powerline {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+  margin-left: -8px; /* overlap neatly */
+  display: flex;
+  align-items: center;
+  height: 100%;
+}
+
+.powerline:first-child {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+  margin-left: 0;
+}
+
+.powerline:last-child {
+  clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 50%, calc(100% - 12px) 100%, 0 100%);
+}
+
 @media print {
   html,
   body {

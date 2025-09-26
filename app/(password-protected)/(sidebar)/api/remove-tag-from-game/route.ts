@@ -97,7 +97,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Game not found" }, { status: 404 });
     }
 
-    const categories = game.catagories ?? [];
+    const categories = game.categories ?? [];
 
     if (!categories.includes(tag)) {
       return NextResponse.json(
@@ -108,15 +108,15 @@ export async function POST(req: NextRequest) {
 
     await gamesColl.updateOne(
       { _id: new ObjectId(gameId as string) },
-      { $pull: { catagories: tag } }
+      { $pull: { categories: tag } }
     );
 
     const updated = await gamesColl.findOne(
       { _id: new ObjectId(gameId as string) },
-      { projection: { catagories: 1 } }
+      { projection: { categories: 1 } }
     );
 
-    return NextResponse.json({ catagories: updated?.catagories ?? [] });
+    return NextResponse.json({ categories: updated?.categories ?? [] });
   } catch (err) {
     console.error(err);
     return NextResponse.json(
