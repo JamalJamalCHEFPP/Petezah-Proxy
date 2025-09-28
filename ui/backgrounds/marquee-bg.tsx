@@ -18,6 +18,7 @@ const messages = [
   "Browse freely 😊 |",
   "Innovation starts here 💡 |",
   "Where speed meets style 😎 |",
+  "App art by The2amGamer 🎨 |",
   "Freedom to explore 🌍 |",
   "Unlock the web 🔓 |",
   "Always improving ✨ |",
