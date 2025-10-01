@@ -4,7 +4,7 @@ let cachedClient: MongoClient | null = null;
 let cachedDb: Db | null = null;
 
 export async function connectToDatabases(
-  useProdDB: boolean
+  useProdDB?: boolean
 ): Promise<{ client: MongoClient; mainDb: Db; }> {
   if (cachedClient && cachedDb) {
     return { client: cachedClient, mainDb: cachedDb };
@@ -19,8 +19,8 @@ export async function connectToDatabases(
   await client.connect();
 
   const mainDb = useProdDB
-    ? client.db("Petezah-Next-Links-Prod")
-    : client.db(process.env.DEVLINKSDBNAME || "Petezah-Next-Links-Dev");
+    ? client.db("pzn")
+    : client.db(process.env.MONGODB_DB_NAME || "pzn-dev");
 
   // Cache the connections
   cachedClient = client;

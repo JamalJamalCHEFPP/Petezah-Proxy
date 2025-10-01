@@ -51,14 +51,18 @@ export default function Page() {
   }
 
   function DCMessage() {
-  alert(
-    'You can now send messages in the Discord channel. Click the icon in the bottom to open the channel. Alternatively, you can join the server by using the link provided in the next screen.'
-  );
-  
-  if (window.confirm("Click OK to open the Discord server, or Cancel to stay here.")) {
-    window.open('https://discord.gg/GqshrYNn62', '_blank');
+    alert(
+      "You can now send messages in the Discord channel. Click the icon in the bottom to open the channel. Alternatively, you can join the server by using the link provided in the next screen."
+    );
+
+    if (
+      window.confirm(
+        "Click OK to open the Discord server, or Cancel to stay here."
+      )
+    ) {
+      window.open("https://discord.gg/GqshrYNn62", "_blank");
+    }
   }
-}
 
   if (!url) {
     return (
@@ -93,9 +97,10 @@ export default function Page() {
               <ArrowPathIcon width={30} height={30} />
             </button>
             <button
-              title="fullscreen"
+              type="button"
+              title="Toggle fullscreen"
               onClick={toggleFullscreen}
-              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-4! hover:scale-110 transition-all duration-500"
+              className="border-2 border-gray-400 rounded-full hover:bg-gray-900 p-[21px]! hover:scale-110 transition-all duration-500"
             >
               <BsFullscreen size={20} />
             </button>

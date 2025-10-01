@@ -1,15 +1,42 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import MarqueeBg from "@/ui/backgrounds/marquee-bg";
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSX } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { GameData } from "@/lib/types";
+import {
+  FaBolt,
+  FaBug,
+  FaExclamationTriangle,
+  FaGem,
+  FaStar,
+} from "react-icons/fa";
+
+const categoryIcons: Record<string, { icon: JSX.Element; bg: string }> = {
+  laggy: {
+    icon: <FaBolt className="text-white" />,
+    bg: "bg-blue-500",
+  },
+  duplicate: {
+    icon: <FaExclamationTriangle className="text-white" />,
+    bg: "bg-yellow-500",
+  },
+  featured: {
+    icon: <FaGem className="text-white" />,
+    bg: "bg-green-500",
+  },
+  broken: {
+    icon: <FaBug className="text-white" />,
+    bg: "bg-red-500",
+  },
+};
 
 export default function Page() {
   const [searchQuery, setSearchQuery] = useState("");
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [games, setGames] = useState<any[] | string>();
   const [filterCategory, setFilterCategory] = useState("");
   const router = useRouter();
@@ -17,10 +44,30 @@ export default function Page() {
   useEffect(() => {
     async function loadGames() {
       try {
-        const response = await fetch("/storage/data/games.json");
+        const response = await fetch("/api/g-data");
         const data = await response.json();
-        setGames(data.games);
+
+        const sorted = data.games.sort((a: any, b: any) => {
+          if (a.label === "Request Games") return -1;
+          if (b.label === "Request Games") return 1;
+
+          const avgA =
+            a.stars && a.stars.length > 0
+              ? a.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+                a.stars.length
+              : 0;
+          const avgB =
+            b.stars && b.stars.length > 0
+              ? b.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+                b.stars.length
+              : 0;
+
+          return avgB - avgA;
+        });
+
+        setGames(sorted);
       } catch (error) {
+        console.error("Fetch error:", error);
         setGames(`Error loading games: ${error}`);
       }
     }
@@ -28,34 +75,61 @@ export default function Page() {
     loadGames();
   }, []);
 
-  function GameCard({
-    game,
-  }: {
-    game: { label: string; imageUrl: string; url: string };
-  }) {
+  function GameCard({ game }: { game: GameData }) {
+    const avgStars =
+      game.stars && game.stars.length > 0
+        ? game.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
+          game.stars.length
+        : 0;
+
     return (
-      <>
-        <div className="flex items-center justify-center">
-          <div className="relative w-[200px] h-[170px] overflow-hidden transition-transform duration-500 rounded-2xl border-white border-2 bg-black flex justify-center items-center hover:scale-110 group">
-            <Link
-              className="w-full h-[170px]! flex justify-center items-center"
-              href={game.url.replace("/iframe.html", "/play") + "/index.html"}
-            >
-              <Image
-                className="object-cover! p-2 h-full hover:scale-110 transition-all duration-500"
-                width={200}
-                height={170}
-                alt={game.label}
-                src={game.imageUrl}
-                unoptimized={process.env.NODE_ENV === "development"}
-              />
-              <p className="absolute bottom-0 right-0 text-center bg-black/60 p-[10px] w-full">
-                {game.label}
-              </p>
-            </Link>
-          </div>
+      <div className="flex items-center justify-center m-2!">
+        <div className="relative w-[200px] h-[170px] overflow-hidden transition-transform duration-500 rounded-2xl border-white border-2 bg-black flex justify-center items-center hover:scale-110 group">
+          <Link
+            className="relative w-full h-[170px] flex justify-center items-center"
+            href={`/play?url=${encodeURIComponent(
+              game.url
+                .replace("/iframe.html?url=", "")
+                .replace("/index.html", "") + "/index.html"
+            )}&id=${encodeURIComponent(String(game._id))}`}
+          >
+            {((game.stars && game.stars?.length > 0) ||
+              game.categories?.length > 0) && (
+              <div className="absolute top-0 right-0 z-10 flex items-stretch h-8 overflow-hidden text-sm text-white rounded-bl-2xl">
+                {game.stars && game.stars?.length > 0 && (
+                  <span className="flex items-center justify-center bg-black/70 px-2!">
+                    {avgStars.toFixed(1)} ({game.stars.length})
+                    <FaStar className="ml-1 text-yellow-400" />
+                  </span>
+                )}
+                {game.categories?.map((cat, idx) => {
+                  const c = categoryIcons[cat];
+                  if (!c) return null;
+                  return (
+                    <span
+                      key={idx}
+                      className={`flex items-center justify-center px-3! ${c.bg} relative`}
+                    >
+                      {c.icon}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+            <Image
+              className="z-0 object-cover w-full h-full transition-all duration-500 hover:scale-110"
+              width={200}
+              height={170}
+              alt={game.label}
+              src={game.imageUrl}
+              unoptimized={process.env.NODE_ENV === "development"}
+            />
+            <p className="absolute bottom-0 right-0 text-center bg-black/60 px-2! w-full z-10 text-white">
+              {game.label}
+            </p>
+          </Link>
         </div>
-      </>
+      </div>
     );
   }
 
@@ -144,7 +218,6 @@ export default function Page() {
               {filteredGames ? (
                 Array.isArray(filteredGames) ? (
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-5 2xl:grid-cols-6">
-                    {/* eslint-disable-next-line @typescript-eslint/no-explicit-any */}
                     {filteredGames.map((game: any, index: number) => (
                       <GameCard key={index} game={game} />
                     ))}

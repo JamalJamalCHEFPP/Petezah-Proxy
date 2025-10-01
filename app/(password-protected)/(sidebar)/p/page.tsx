@@ -112,7 +112,7 @@ export default function ProfilePage() {
   return (
     <div className="flex items-center justify-center h-[100%] relative">
       <MarqueeBg />
-      <div className="max-w-[80%] p-[50px]! rounded-[12px] border-2 border-[#0096FF] backdrop-blur-md backdrop-filter backdrop-opacity-50 bg-[#0A1D37] text-center">
+      <div className="max-w-[80%] p-[50px]! max-h-[90%] overflow-y-auto rounded-[12px] border-2 border-[#0096FF] backdrop-blur-md backdrop-filter backdrop-opacity-50 bg-[#0A1D37] text-center">
         <h1 className="text-3xl mb-3!">Your Profile</h1>
         {user ? (
           <>

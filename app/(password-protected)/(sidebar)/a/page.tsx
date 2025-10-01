@@ -14,12 +14,17 @@ const apps = [
   {
     label: "PeteAI",
     url: "/pages/other/ai/iframe.html",
-    imageUrl: "/storage/images/logo-png-removebg-preview.png",
+    imageUrl: "/storage/images/PeteAI.png",
   },
   {
     label: "PeteMusic",
     url: "/pages/other/music/iframe.html",
     imageUrl: "/storage/images/PZMusic.png",
+  },
+  {
+    label: "PeteChat",
+    url: "/iframe.html?url=https://vtx.chat.cdn.cloudflare.net/embed/petezah",
+    imageUrl: "/storage/images/vortex-petezah.webp",
   },
   {
     label: "Google",
@@ -217,11 +222,13 @@ export default function Page() {
             <Link
               className="w-full h-[170px]! flex justify-center items-center"
               href={
-                app.url.startsWith("/iframe.html")
+                app.url === "/iframe.html?url=https://vtx.chat.cdn.cloudflare.net/embed/petezah"
+                  ? app.url.replace("/iframe.html", "/app")
+                  : app.url.startsWith("/iframe.html")
                   ? app.url.replace("/iframe.html", "/app") + "/index.html"
-                  : app.url == "/pages/other/ai/iframe.html"
+                  : app.url === "/pages/other/ai/iframe.html"
                   ? `/pete-ai`
-                  : app.url == "/pages/other/music/iframe.html"
+                  : app.url === "/pages/other/music/iframe.html"
                   ? `/pzm`
                   : app.url
               }
