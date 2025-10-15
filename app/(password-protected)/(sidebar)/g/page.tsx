@@ -18,7 +18,7 @@ import {
 const categoryIcons: Record<string, { icon: JSX.Element; bg: string }> = {
   laggy: {
     icon: <FaBolt className="text-white" />,
-    bg: "bg-blue-500",
+    bg: "bg-orange-500",
   },
   duplicate: {
     icon: <FaExclamationTriangle className="text-white" />,
