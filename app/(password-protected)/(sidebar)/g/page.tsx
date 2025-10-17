@@ -51,6 +51,20 @@ export default function Page() {
           if (a.label === "Request Games") return -1;
           if (b.label === "Request Games") return 1;
 
+          if (a.categories?.includes("featured") && !b.categories?.includes("featured")) {
+            return -1;
+          }
+          if (!a.categories?.includes("featured") && b.categories?.includes("featured")) {
+            return 1;
+          }
+
+          if (a.categories?.includes("broken") && !b.categories?.includes("broken")) {
+            return 1;
+          }
+          if (!a.categories?.includes("broken") && b.categories?.includes("broken")) {
+            return -1;
+          }
+
           const avgA =
             a.stars && a.stars.length > 0
               ? a.stars.reduce((sum: number, s: any) => sum + s.rating, 0) /
