@@ -18,7 +18,7 @@ import {
 const categoryIcons: Record<string, { icon: JSX.Element; bg: string }> = {
   laggy: {
     icon: <FaBolt className="text-white" />,
-    bg: "bg-blue-500",
+    bg: "bg-orange-500",
   },
   duplicate: {
     icon: <FaExclamationTriangle className="text-white" />,
@@ -50,6 +50,20 @@ export default function Page() {
         const sorted = data.games.sort((a: any, b: any) => {
           if (a.label === "Request Games") return -1;
           if (b.label === "Request Games") return 1;
+
+          if (a.categories?.includes("featured") && !b.categories?.includes("featured")) {
+            return -1;
+          }
+          if (!a.categories?.includes("featured") && b.categories?.includes("featured")) {
+            return 1;
+          }
+
+          if (a.categories?.includes("broken") && !b.categories?.includes("broken")) {
+            return 1;
+          }
+          if (!a.categories?.includes("broken") && b.categories?.includes("broken")) {
+            return -1;
+          }
 
           const avgA =
             a.stars && a.stars.length > 0
