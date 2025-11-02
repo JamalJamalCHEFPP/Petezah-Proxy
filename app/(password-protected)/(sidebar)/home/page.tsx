@@ -21,6 +21,12 @@ import {
 import Card from "@/ui/global/card";
 import Link from "next/link";
 import { IoIosClose } from "react-icons/io";
+import {
+  IoBatteryCharging,
+  IoBatteryDead,
+  IoBatteryFull,
+  IoBatteryHalf,
+} from "react-icons/io5";
 
 export default function Page() {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -28,6 +34,48 @@ export default function Page() {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [showPopup, setShowPopup] = useState(false);
+  const [charging, setCharging] = useState<boolean | null>(null);
+  const [level, setLevel] = useState<number | null>(null);
+  const [fps, setFps] = useState(0);
+
+  const lastFrameTime = useRef(performance.now());
+  const frameCount = useRef(0);
+  const animationFrameId = useRef<number | null>(null);
+
+  useEffect(() => {
+    function calculateFps(timestamp: number) {
+      frameCount.current++;
+      const elapsed = timestamp - lastFrameTime.current;
+
+      if (elapsed >= 1000) {
+        setFps(frameCount.current);
+        frameCount.current = 0;
+        lastFrameTime.current = timestamp;
+      }
+
+      animationFrameId.current = requestAnimationFrame(calculateFps);
+    }
+    animationFrameId.current = requestAnimationFrame(calculateFps);
+    return () => {
+      if (animationFrameId.current)
+        cancelAnimationFrame(animationFrameId.current);
+    };
+  }, []);
+
+  interface BatteryManager extends EventTarget {
+    charging: boolean;
+    level: number;
+    addEventListener(
+      type: "chargingchange" | "levelchange",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      listener: (this: BatteryManager, ev: Event) => any
+    ): void;
+    removeEventListener(
+      type: "chargingchange" | "levelchange",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      listener: (this: BatteryManager, ev: Event) => any
+    ): void;
+  }
 
   const searchParams = useSearchParams();
 
@@ -167,8 +215,96 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(() => {
+    let battery: BatteryManager | null = null;
+
+    async function initBattery() {
+      if (!("getBattery" in navigator)) {
+        console.warn("Battery API not supported on this browser.");
+        return;
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      battery = await (navigator as any).getBattery();
+
+      function updateAll() {
+        setCharging(battery!.charging);
+        setLevel(battery!.level);
+      }
+
+      updateAll();
+
+      if (battery) {
+        battery.addEventListener("chargingchange", updateAll);
+        battery.addEventListener("levelchange", updateAll);
+      }
+    }
+
+    initBattery();
+    return () => {
+      if (battery) {
+        battery.removeEventListener("chargingchange", () => {});
+        battery.removeEventListener("levelchange", () => {});
+      }
+    };
+  }, []);
+
   return (
     <div className="flex items-center h-full relative w-full bg-[#0A1D37] text-white overflow-hidden">
+      <Card className="absolute z-10 bottom-10 left-10">
+        <div className="flex items-center gap-2">
+          {level && (
+            <div className="flex items-center gap-2">
+              <div
+                className={clsx(
+                  "flex items-center",
+                  level > 0.8
+                    ? "text-green-500"
+                    : level > 0.2
+                    ? "text-yellow-500"
+                    : "text-red-500"
+                )}
+              >
+                {charging ? (
+                  <>
+                    <IoBatteryCharging />
+                  </>
+                ) : level > 0.8 ? (
+                  <IoBatteryFull />
+                ) : level > 0.2 ? (
+                  <IoBatteryHalf />
+                ) : (
+                  <IoBatteryDead />
+                )}
+              </div>
+              {(level * 100).toFixed(0)}%
+            </div>
+          )}
+          <div className="text-sm text-gray-300">FPS: {fps}</div>
+        </div>
+
+        <a
+          title="Join our Discord Server!"
+          href="https://discord.gg/cYjHFDguxS"
+          target="_parent"
+        >
+          <div className="flex justify-center items-center h-[30px] px-4! gap-2 mt-[15px]! bg-[#112c69] rounded-[8px]">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              height="14"
+              width="17.5"
+              viewBox="0 0 640 512"
+            >
+              {/*<!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.-->*/}
+              <path
+                fill="#ffffff"
+                d="M524.5 69.8a1.5 1.5 0 0 0 -.8-.7A485.1 485.1 0 0 0 404.1 32a1.8 1.8 0 0 0 -1.9 .9 337.5 337.5 0 0 0 -14.9 30.6 447.8 447.8 0 0 0 -134.4 0 309.5 309.5 0 0 0 -15.1-30.6 1.9 1.9 0 0 0 -1.9-.9A483.7 483.7 0 0 0 116.1 69.1a1.7 1.7 0 0 0 -.8 .7C39.1 183.7 18.2 294.7 28.4 404.4a2 2 0 0 0 .8 1.4A487.7 487.7 0 0 0 176 479.9a1.9 1.9 0 0 0 2.1-.7A348.2 348.2 0 0 0 208.1 430.4a1.9 1.9 0 0 0 -1-2.6 321.2 321.2 0 0 1 -45.9-21.9 1.9 1.9 0 0 1 -.2-3.1c3.1-2.3 6.2-4.7 9.1-7.1a1.8 1.8 0 0 1 1.9-.3c96.2 43.9 200.4 43.9 295.5 0a1.8 1.8 0 0 1 1.9 .2c2.9 2.4 6 4.9 9.1 7.2a1.9 1.9 0 0 1 -.2 3.1 301.4 301.4 0 0 1 -45.9 21.8 1.9 1.9 0 0 0 -1 2.6 391.1 391.1 0 0 0 30 48.8 1.9 1.9 0 0 0 2.1 .7A486 486 0 0 0 610.7 405.7a1.9 1.9 0 0 0 .8-1.4C623.7 277.6 590.9 167.5 524.5 69.8zM222.5 337.6c-29 0-52.8-26.6-52.8-59.2S193.1 219.1 222.5 219.1c29.7 0 53.3 26.8 52.8 59.2C275.3 311 251.9 337.6 222.5 337.6zm195.4 0c-29 0-52.8-26.6-52.8-59.2S388.4 219.1 417.9 219.1c29.7 0 53.3 26.8 52.8 59.2C470.7 311 447.5 337.6 417.9 337.6z"
+              />
+            </svg>
+            Join our Discord!
+          </div>
+        </a>
+      </Card>
       {showPopup && (
         <>
           <div className="absolute top-0 left-0 flex items-center justify-center w-full h-full z-100 bg-gray-800/50">
