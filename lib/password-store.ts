@@ -1,5 +1,4 @@
 import { Redis } from "@upstash/redis";
-import { getCachedPasswords } from "./password-cache.edge";
 
 const redis = Redis.fromEnv();
 
@@ -267,5 +266,19 @@ export async function verifyPassword(candidate: string): Promise<boolean> {
 }
 
 export async function getAllPasswords(): Promise<Record<string, string>> {
-  return getCachedPasswords();
+  const keys = await redis.keys("password:*");
+  if (keys.length === 0) return {};
+
+  const values: (string | null)[] = await redis.mget(...keys);
+
+  const result: Record<string, string> = {};
+
+  keys.forEach((key, i) => {
+    const month = key.replace("password:", "");
+    if (values[i] !== null && values[i] !== undefined) {
+      result[month] = values[i]!;
+    }
+  });
+
+  return result;
 }
