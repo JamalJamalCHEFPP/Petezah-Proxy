@@ -9,7 +9,6 @@ import {
   ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
 import { useEffect, useRef, useState } from "react";
-import WidgetBotCrate from "@/ui/play/crate";
 import { FaDiscord, FaStar, FaStarHalfAlt, FaRegStar } from "react-icons/fa";
 import { GameData } from "@/lib/types";
 import { createClient } from "@/utils/supabase/client";
@@ -72,7 +71,7 @@ export default function Page() {
 
   function DCMessage() {
     alert(
-      "You can now send messages in the Discord channel. Click the icon in the bottom to open the channel. Alternatively, you can join the server by using the link provided in the next screen."
+      "Unfortunately, we no longer are allowing users to access our Discord server through our website as people have been abusing the service that we use. However, you can join the server by using the link provided in the next screen."
     );
     if (
       window.confirm(
@@ -236,7 +235,6 @@ export default function Page() {
           )}
         </div>
       </div>
-      <WidgetBotCrate />
     </div>
   );
 }
